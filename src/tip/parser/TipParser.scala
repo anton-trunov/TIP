@@ -78,8 +78,14 @@ class TipParser(val input: ParserInput) extends Parser with Comments {
   }
 
   def AssignableExpression: Rule1[Assignable] = rule {
-    (DirectFieldWrite | IndirectFieldWrite | Identifier | DerefWrite) ~> { x: Assignable =>
+    (DirectFieldWrite | IndirectFieldWrite | ArrayWrite | Identifier | DerefWrite) ~> { x: Assignable =>
       x
+    }
+  }
+
+  def ArrayWrite: Rule1[AArrayWrite] = rule {
+    push(cursor) ~ Identifier ~ "[" ~ Expression ~ "]" ~> { (cur: Int, arr: AIdentifier, index: AExpr) =>
+      AArrayWrite(arr, index, cur)
     }
   }
 
@@ -113,6 +119,10 @@ class TipParser(val input: ParserInput) extends Parser with Comments {
     push(cursor) ~ "{" ~ zeroOrMore(Field).separatedBy(wspStr(",")) ~ "}" ~> ((cur: Int, fields: Seq[ARecordField]) => ARecord(fields.toList, cur))
   }
 
+  def ArrayLiteral: Rule1[AArrayLiteral] = rule {
+    push(cursor) ~ "{" ~ zeroOrMore(Expression).separatedBy(wspStr(",")) ~ "}" ~> ((cur: Int, elements: Seq[AExpr]) => AArrayLiteral(elements.toList, cur))
+  }
+
   def Access: Rule1[AFieldAccess] =
     rule {
       (Identifier | DeRef | Parens) ~ oneOrMore("." ~ Identifier) ~> (
@@ -142,14 +152,20 @@ class TipParser(val input: ParserInput) extends Parser with Comments {
     ))
   }
 
+  def ArrayRead: Rule1[AArrayRead] = rule {
+    push(cursor) ~ Identifier ~ "[" ~ Expression ~ "]" ~> ((cur: Int, arr: AIdentifier, index: AExpr) => AArrayRead(arr, index, cur))
+  }
+
   def Atom: Rule1[AExpr] = rule {
     (FunApp
       | Number
       | Parens
       | PointersExpression
       | push(cursor) ~ wspStr(LanguageKeywords.KINPUT) ~> ((cur: Int) => AInput(cur))
+      | ArrayRead
       | Identifier
-      | Record)
+      | Record
+      | ArrayLiteral)
   }
 
   def Parens = rule {

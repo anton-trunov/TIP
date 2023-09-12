@@ -34,6 +34,8 @@ trait DepthFirstAstVisitor[A] {
             visit(dfw.id, arg)
           case ifw: AIndirectFieldWrite =>
             visit(ifw.exp, arg)
+          case arrwr: AArrayWrite =>
+            visit(arrwr.index, arg)
         }
         visit(as.right, arg)
       case block: ABlock =>
@@ -66,6 +68,10 @@ trait DepthFirstAstVisitor[A] {
         visit(alloc.exp, arg)
       case ref: AVarRef =>
         visit(ref.id, arg)
+      case arrrd: AArrayRead =>
+        visit(arrrd.index, arg)
+      case arrlit: AArrayLiteral =>
+        arrlit.elements.foreach((visit(_, arg)))
       case _: AAtomicExpr | _: AIdentifierDeclaration =>
     }
 }

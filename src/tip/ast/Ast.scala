@@ -95,6 +95,12 @@ case class ARecordField(field: String, exp: AExpr, loc: Loc)
 
 case class AFieldAccess(record: AExpr, field: String, loc: Loc) extends AExpr with AAtomicExpr
 
+case class AArrayWrite(arr: AIdentifier, index: AExpr, loc: Loc) extends AExpr with Assignable
+
+case class AArrayRead(arr: AIdentifier, index: AExpr, loc: Loc) extends AExpr with AAtomicExpr
+
+case class AArrayLiteral(elements: List[AExpr], loc: Loc) extends AExpr with AAtomicExpr
+
 //////////////// Statements //////////////////////////
 
 sealed trait AStmt extends AstNode

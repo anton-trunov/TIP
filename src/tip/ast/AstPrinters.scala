@@ -45,6 +45,12 @@ object AstPrinters {
               fields.map { f =>
                 s"${f.field}:${f.exp.print(printer)}"
               }.mkString("{", ",", "}")
+            case AArrayLiteral(elements, _) =>
+              elements.map { el =>
+                s"${el.print((printer))}"
+              }.mkString("{", ",", "}")
+            case AArrayRead(arr, index, _) =>
+              s"${arr.print(printer)}[${index.print(printer)}]"
             case AFieldAccess(record, field, _) =>
               s"${record.print(printer)}.$field"
             case ANull(_) =>
@@ -63,6 +69,8 @@ object AstPrinters {
                   s"${id.print(printer)}.$field"
                 case AIndirectFieldWrite(exp, field, _) =>
                   s"(*${exp.print(printer)}).$field"
+                case AArrayWrite(arr, index, _) =>
+                  s"${arr.print(printer)}[${index.print(printer)}]"
               }
               s"$ls = ${right.print(printer)};"
             case AIfStmt(guard, ifBranch, elseBranch, _) =>

@@ -1,0 +1,21 @@
+fib(n){
+    var fs,i;
+    var temp;
+    fs = {1, 1};
+
+    i=n;
+    while( i>1 ){
+        temp = fs[0]+fs[1];
+        fs[0] = fs[1];
+        fs[1] = temp;
+        i=i-1;
+    }
+    return fs[1];
+}
+
+main(){
+    var n;
+    n=input;
+    return fib(n);
+}
+

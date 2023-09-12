@@ -76,6 +76,11 @@ class RunOption {
   var normalizer: tip.ast.Normalizer = tip.ast.NoNormalizer
 
   /**
+    * If set, parse and print the program and immediately exit
+    */
+  var print = false
+
+  /**
     * Checks that a source file or directory has been provided.
     * @return true if success
     */
@@ -152,13 +157,14 @@ object Tip extends App {
         |
         | -cfg               construct the (intraprocedural) control-flow graph, but do not perform any analysis
         | -icfg              construct the interprocedural control-flow graph, but do not perform any analysis
+        | -print             parse and print the program and immediately exit
         | -verbose           verbose output
       """.stripMargin)
 
   /**
     * Process the given file according to the specified options.
     */
-  def processFile(file: File, options: RunOption) = {
+  def processFile(file: File, options: RunOption): Unit = {
     try {
       val program = {
         val bs = Source.fromFile(file)
@@ -191,6 +197,11 @@ object Tip extends App {
               Output.output(file, OtherOutput(OutputKindE.normalized), p.toString, options.out)
               p
             }
+
+          if (options.print) {
+            println(parsedNode.toString())
+            return
+          }
 
           // run declaration analysis
           // (for information about the use of 'implicit', see [[tip.analysis.TypeAnalysis]])
@@ -351,6 +362,8 @@ object Tip extends App {
         case "-verbose" =>
           Log.defaultLevel = Log.Level.Verbose
           log.level = Log.Level.Verbose
+        case "-print" =>
+          options.print = true
         case _ =>
           log.error(s"Unrecognized option $s")
           printUsage()
